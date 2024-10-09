@@ -5,44 +5,66 @@ import 'package:mid_term_app/components/my_textfield.dart';
 
 import '../helper/helper_functions.dart';
 
-class LoginPage extends StatefulWidget {
-
+class RegisterPage extends StatefulWidget {
   final void Function()? onTap;
 
-  LoginPage({super.key, this.onTap});
+  const RegisterPage({super.key, this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController usernameController = TextEditingController();
+
   final TextEditingController emailController = TextEditingController();
 
   final TextEditingController passwordController = TextEditingController();
 
-  void login() async{
-    showDialog(context: context, builder: (context) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    });
+  final TextEditingController passwordConfirmedController =
+      TextEditingController();
 
-    try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: emailController.text, password: passwordController.text);
-      // mounted có nghĩa là widget đó đã được build và nó không bị dispose hay bị hủy
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
-
-
-
-    } on FirebaseAuthException catch (e) {
+  Future<void> registerUser() async {
+    // show loading circle
+    showDialog(
+        context: context,
+        builder: (context) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+    // make sure passwords match
+    if (passwordController.text != passwordConfirmedController.text) {
+      // close loading circle
       Navigator.pop(context);
 
-      displayMessageToUser("Wrong email or password!", context);
+      displayMessageToUser("Passwords don't match", context);
+    } else {
+      // create user
+      try {
+        UserCredential? userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: emailController.text,
+          password: passwordController.text,
+        );
+
+        // close loading circle
+        Navigator.pop(context);
+      } on FirebaseAuthException catch (e) {
+        // close loading circle
+        Navigator.pop(context);
+
+        if (e.code == 'weak-password') {
+          displayMessageToUser('The password provided is too weak.', context);
+        } else if (e.code == 'email-already-in-use') {
+          displayMessageToUser(
+              'The account already exists for that email.', context);
+        } else {
+          displayMessageToUser(e.code, context);
+        }
+      }
     }
-
-
+    // try to create user
   }
 
   @override
@@ -74,6 +96,12 @@ class _LoginPageState extends State<LoginPage> {
                   //
                   const SizedBox(height: 50),
                   MyTextField(
+                      hintText: "Username",
+                      obscureText: false,
+                      controller: usernameController),
+                  //
+                  const SizedBox(height: 10),
+                  MyTextField(
                       hintText: "Email",
                       obscureText: false,
                       controller: emailController),
@@ -84,28 +112,16 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: true,
                       controller: passwordController),
                   const SizedBox(height: 10),
-              
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {},
-                        child: Text(
-                          "Forgot Password?",
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  //
-                  const SizedBox(height: 10),
+                  MyTextField(
+                      hintText: "Confirm Password",
+                      obscureText: true,
+                      controller: passwordConfirmedController),
+                  const SizedBox(height: 25),
                   //
                   MyButton(
-                      text: "Login",
+                      text: "Register",
                       onTap: () {
-                        login();
+                        registerUser();
                       }),
                   //
                   const SizedBox(height: 25),
@@ -113,11 +129,11 @@ class _LoginPageState extends State<LoginPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?"),
+                      const Text("Already have an account?"),
                       GestureDetector(
                         onTap: widget.onTap,
                         child: const Text(
-                          " Register here",
+                          " Login here",
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
