@@ -1,6 +1,7 @@
 # mid_term_app
 
-A new Flutter project.
+- Flutter app with a simple UI that displays a list of items and allows the user to add new items to the list
+- Using firebase as a backend to store the list of items
 
 ## Getting Started
 
