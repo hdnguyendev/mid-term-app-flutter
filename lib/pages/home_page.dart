@@ -1,24 +1,103 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mid_term_app/services/firestore_service.dart';
 
-class HomePage extends StatelessWidget {
-  void logout()  async{
+import 'add_product_page.dart';
 
+class HomePage extends StatefulWidget {
+  HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final TextEditingController textController = TextEditingController();
+
+  final FirestoreService firestoreService = FirestoreService();
+
+  void logout() async {
     await FirebaseAuth.instance.signOut();
-
   }
-
-  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Page'),
+        title: Text('List of Products'),
         actions: [IconButton(onPressed: logout, icon: Icon(Icons.logout))],
       ),
-      body: const Center(
-        child: Text('Home Page'),
+      body: StreamBuilder(
+          stream: firestoreService.getProducts(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List products = snapshot.data!.docs;
+
+              return ListView.builder(
+                  itemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index) {
+                    DocumentSnapshot doc = products[index];
+                    String productId = doc.id;
+
+                    // get each individual doc
+                    Map<String, dynamic> product =
+                        doc.data() as Map<String, dynamic>;
+                    String name = product['name'];
+                    double price = product['price'];
+                    String imageUrl = product['imageUrl'];
+
+                    return ListTile(
+                      title: Text(name),
+                      subtitle: Text(price.toString()),
+                      leading: Image.network(imageUrl),
+                      trailing: IconButton(
+                        icon: Icon(Icons.settings),
+                        onPressed: () {
+                          // openNoteBox(docId: docId);
+                          // textController.text = noteText;
+                        },
+                      ),
+                    );
+                  });
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          }),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          MaterialPageRoute route =
+              MaterialPageRoute(builder: (context) => AddProductPage());
+          Navigator.push(context, route);
+
+          // showDialog(
+          //     context: context,
+          //     builder: (context) => AlertDialog(
+          //           content: TextField(
+          //             controller: textController,
+          //             decoration: const InputDecoration(hintText: "Enter note"),
+          //           ),
+          //           actions: [
+          //             TextButton(
+          //                 onPressed: () {
+          //                   Navigator.pop(context);
+          //                 },
+          //                 child: const Text("Cancel")),
+          //             TextButton(
+          //                 onPressed: () {
+          //                   // Add note to database
+          //                   firestoreService.addNote(textController.text);
+          //                   textController.clear();
+          //
+          //                   Navigator.pop(context);
+          //                 },
+          //                 child: const Text("Save")),
+          //           ],
+          //         ));
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
