@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:mid_term_app/pages/detail_product_page.dart';
 import 'package:mid_term_app/services/firestore_service.dart';
 
 import 'add_product_page.dart';
@@ -34,6 +35,26 @@ class _HomePageState extends State<HomePage> {
             if (snapshot.hasData) {
               List products = snapshot.data!.docs;
 
+              if (products.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(25.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Text("No products found", style: TextStyle(fontSize: 20)),
+                          Padding(
+                            padding: EdgeInsets.all(25.0),
+                            child: Image(image: AssetImage('lib/images/not-found-image.png'), width: 200, height: 200),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+
+                );
+              }
+
               return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {
@@ -43,6 +64,7 @@ class _HomePageState extends State<HomePage> {
                     // get each individual doc
                     Map<String, dynamic> product =
                         doc.data() as Map<String, dynamic>;
+                    product['id'] = productId;
                     String name = product['name'];
                     double price = product['price'];
                     String imageUrl = product['imageUrl'];
@@ -51,13 +73,14 @@ class _HomePageState extends State<HomePage> {
                       title: Text(name),
                       subtitle: Text(price.toString()),
                       leading: Image.network(imageUrl),
-                      trailing: IconButton(
-                        icon: Icon(Icons.settings),
-                        onPressed: () {
-                          // openNoteBox(docId: docId);
-                          // textController.text = noteText;
-                        },
-                      ),
+                      onTap: () {
+                        // open detail page using
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    DetailProductPage(product: product)));
+                      },
                     );
                   });
             } else {
