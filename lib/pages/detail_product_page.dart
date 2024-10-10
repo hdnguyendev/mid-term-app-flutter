@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mid_term_app/components/my_textfield.dart';
+import 'package:mid_term_app/components/my_button.dart';
 import 'package:mid_term_app/services/firestore_service.dart';
 
 class DetailProductPage extends StatefulWidget {
@@ -42,8 +42,35 @@ class _DetailProductPageState extends State<DetailProductPage> {
         actions: [
           IconButton(
             onPressed: () {
-              firestoreService.deleteProduct(widget.product['id']);
-              Navigator.pop(context);
+              // confirm delete
+              showDialog(context: context, builder: (context) {
+                return AlertDialog(
+                  title: const Text('Delete Product'),
+                  content: const Text('Are you sure you want to delete this product?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Cancel', style: TextStyle(color: Colors.green)),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                        await firestoreService.deleteProduct(widget.product['id']);
+
+                        Navigator.popUntil(context, ModalRoute.withName('/'));
+                      },
+                      child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
+                );
+              });
             },
             icon: Icon(Icons.delete, color: Colors.red),
           )
@@ -77,8 +104,14 @@ class _DetailProductPageState extends State<DetailProductPage> {
                         widget.product['imageUrl']), // Hiển thị ảnh cũ
               ),
               const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () async {
+              MyButton(
+                onTap: () async {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
                   // Kiểm tra nếu có ảnh mới, nếu không, giữ nguyên ảnh cũ
                   String imageUrl = widget.product['imageUrl'];
                   if (_image != null) {
@@ -94,8 +127,9 @@ class _DetailProductPageState extends State<DetailProductPage> {
                     imageUrl, // URL của ảnh mới hoặc cũ
                   );
                   Navigator.pop(context);
+                  Navigator.pop(context);
                 },
-                child: Text('Update Product'),
+                text: 'Update Product',
               ),
             ],
           ),
