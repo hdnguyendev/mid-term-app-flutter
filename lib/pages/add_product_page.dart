@@ -31,7 +31,10 @@ class _AddProductPageState extends State<AddProductPage> {
   }
 
   Future<void> _saveProduct() async {
-    if (_image == null) return;
+    if (_image == null) {
+      displayMessageToUser("Please select an image", context);
+      return;
+    };
 
     // loading
     showDialog(

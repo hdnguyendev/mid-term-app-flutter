@@ -51,10 +51,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-
                 );
               }
-
               return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (context, index) {

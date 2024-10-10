@@ -1,7 +1,10 @@
-# mid_term_app
-
+# Flutter Firebase App - Giữa kì Lập trình đa nền tảng
+## Thông tin sinh viên
+- Họ và tên: Hồ Đăng Nguyện
+- MSSV: 21IT363 - 21SE1
 - Flutter app with a simple UI that displays a list of items and allows the user to add new items to the list
 - Using firebase as a backend to store the list of items
+- Drive Report: [Drive Report](https://drive.google.com/drive/folders/1Ac9_msJny1pODH-OcW-pQgCBddewsD4a?usp=sharing)
 
 ## Getting Started
 
